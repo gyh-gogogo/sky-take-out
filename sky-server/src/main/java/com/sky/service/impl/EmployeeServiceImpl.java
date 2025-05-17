@@ -16,6 +16,7 @@ import com.sky.exception.PasswordErrorException;
 import com.sky.mapper.EmployeeMapper;
 import com.sky.result.PageResult;
 import com.sky.service.EmployeeService;
+import org.aspectj.weaver.ast.Var;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -118,6 +119,27 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .build();
         employeeMapper.update(employee);
 
+    }
+
+    @Override
+    public Employee getById(Long id) {
+        Employee employee= employeeMapper.getById(id);
+        employee.setPassword("****");
+        return employee;
+    }
+
+    //编辑员工信息
+    @Override
+    public void update(EmployeeDTO employeeDTO) {
+        Employee employee = new Employee();
+        //对象属性拷贝
+        BeanUtils.copyProperties(employeeDTO, employee);
+        //设置修改时间
+        employee.setUpdateTime(LocalDateTime.now());
+        //设置当前记录修改人id
+        employee.setUpdateUser(BaseContext.getCurrentId());
+
+        employeeMapper.update(employee);
     }
 
 }
