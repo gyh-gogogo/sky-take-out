@@ -19,6 +19,9 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 
 import java.util.List;
+/**
+ * 我来搞破坏了
+ */
 
 /**
  * 配置类，注册web层相关组件
