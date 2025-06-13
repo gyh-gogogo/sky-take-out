@@ -13,4 +13,10 @@
                    #{payStatus}, #{amount}, #{remark}, #{phone}, #{address}, #{consignee}, #{estimatedDeliveryTime},
                    #{deliveryStatus}, #{packAmount}, #{tablewareNumber}, #{tablewareStatus})
     </insert>
+    <update id="update">
+
+    </update>
+    <select id="getByNumber" resultType="com.sky.entity.Orders">
+
+    </select>
 </mapper>

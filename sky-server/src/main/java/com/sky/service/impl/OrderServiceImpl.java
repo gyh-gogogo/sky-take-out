@@ -8,6 +8,7 @@ import com.sky.entity.OrderDetail;
 import com.sky.entity.Orders;
 import com.sky.entity.ShoppingCart;
 import com.sky.exception.AddressBookBusinessException;
+import com.sky.exception.BaseException;
 import com.sky.exception.ShoppingCartBusinessException;
 import com.sky.mapper.AddressBookMapper;
 import com.sky.mapper.OrderDetailMapper;
@@ -15,11 +16,8 @@ import com.sky.mapper.OrderMapper;
 import com.sky.mapper.ShoppingCartMapper;
 import com.sky.service.OrderService;
 import com.sky.vo.OrderSubmitVO;
-import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.NotWritablePropertyException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,8 +37,10 @@ public class OrderServiceImpl implements OrderService {
     private AddressBookMapper addressBookMapper;
     @Autowired
     private ShoppingCartMapper shoppingCartMapper;
+
     /**
      * 用户下单
+     *
      * @param ordersSubmitDTO
      * @return
      */
@@ -48,7 +48,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderSubmitVO submitOrder(OrdersSubmitDTO ordersSubmitDTO) {
         // 1. 处理各种业务异常 (地址簿为空、购物车数据为空)
         AddressBook addressBook = addressBookMapper.getById(ordersSubmitDTO.getAddressBookId());
-        if(addressBook==null){
+        if (addressBook == null) {
             throw new AddressBookBusinessException(MessageConstant.ADDRESS_BOOK_IS_NULL);
         }
 
@@ -56,12 +56,12 @@ public class OrderServiceImpl implements OrderService {
         ShoppingCart shoppingCart = new ShoppingCart();
         shoppingCart.setUserId(userId);
         List<ShoppingCart> shoppingCartList = shoppingCartMapper.list(shoppingCart);
-        if(shoppingCartList==null||shoppingCartList.size()==0){
+        if (shoppingCartList == null || shoppingCartList.size() == 0) {
             throw new ShoppingCartBusinessException(MessageConstant.SHOPPING_CART_IS_NULL);
         }
         // 2. 向订单表插入1条数据
         Orders orders = new Orders();
-        BeanUtils.copyProperties(ordersSubmitDTO,orders);
+        BeanUtils.copyProperties(ordersSubmitDTO, orders);
         orders.setOrderTime(LocalDateTime.now());
         orders.setPayStatus(Orders.UN_PAID);
         orders.setStatus(Orders.PENDING_PAYMENT);
@@ -72,11 +72,11 @@ public class OrderServiceImpl implements OrderService {
 
         orderMapper.insert(orders);
 
-        List<OrderDetail> orderDetailList=new ArrayList<>();
+        List<OrderDetail> orderDetailList = new ArrayList<>();
         // 3. 向订单明细表插入n条数据
-        for (ShoppingCart cart:shoppingCartList){
+        for (ShoppingCart cart : shoppingCartList) {
             OrderDetail orderDetail = new OrderDetail();
-            BeanUtils.copyProperties(cart,orderDetail);
+            BeanUtils.copyProperties(cart, orderDetail);
             orderDetail.setOrderId(orders.getId());
             orderDetailList.add(orderDetail);
         }
@@ -91,5 +91,22 @@ public class OrderServiceImpl implements OrderService {
                 .orderAmount(orders.getAmount())
                 .build();
         return orderSubmitVO;
+    }
+
+    @Override
+    public void paySuccess(String orderNumber) {
+        Orders orders = orderMapper.getByNumber(orderNumber);
+
+        if (orders.getPayStatus().equals(Orders.PAID)) {
+            //如果该订单已经支付成功，无需再次支付
+            throw new BaseException("该订单已支付成功，无需重复支付");
+        }
+        //还没有支付的话，设置支付状态为已付款,设置结账时间,设置订单状态为待接单
+        orders.setPayStatus(Orders.PAID);
+        orders.setCheckoutTime(LocalDateTime.now());
+        orders.setStatus(Orders.TO_BE_CONFIRMED);
+        //更新订单状态
+        orderMapper.update(orders);
+
     }
 }

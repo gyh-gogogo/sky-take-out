@@ -10,4 +10,6 @@ public interface OrderService {
      * @return
      */
     OrderSubmitVO submitOrder(OrdersSubmitDTO ordersSubmitDTO);
+
+    void paySuccess(String orderNumber);
 }
