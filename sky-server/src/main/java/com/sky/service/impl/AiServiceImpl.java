@@ -1,5 +1,6 @@
 package com.sky.service.impl;
 
+import com.sky.context.BaseContext;
 import com.sky.result.Result;
 import com.sky.service.AiService;
 import io.github.imfangs.dify.client.DifyChatClient;
@@ -17,7 +18,8 @@ import java.io.IOException;
 public class AiServiceImpl implements AiService {
     @Override
     public String chat(String question) {
-        // TODO 你自己获得用户Id
+
+        Long userId  = BaseContext.getCurrentId();
 
         // 检测当前question是否为空
         if (question == null || question.trim().isEmpty()) {
@@ -25,7 +27,7 @@ public class AiServiceImpl implements AiService {
         }
         // 这里可以集成AI模型进行问答处理
         DifyChatClient difyChatClient = initDify();
-        ChatMessage message = getChatMessage(question, 1L, ResponseMode.BLOCKING);
+        ChatMessage message = getChatMessage(question, userId, ResponseMode.BLOCKING);
 
         String response;
         try {
@@ -50,6 +52,6 @@ public class AiServiceImpl implements AiService {
     }
 
     private DifyChatClient initDify() {
-        return DifyClientFactory.createChatClient("http://192.168.150.107/v1", "app-vKU1C1YH373psmd1p5sGhfpd");
+        return DifyClientFactory.createChatClient("http://192.168.102.123:8888/v1", "app-vKU1C1YH373psmd1p5sGhfpd");
     }
 }
