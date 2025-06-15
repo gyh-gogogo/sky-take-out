@@ -58,4 +58,13 @@ public class AddressBook implements Serializable {
 
     //是否默认 0否 1是
     private Integer isDefault;
+
+    public String getAddress() {
+        StringBuilder sb = new StringBuilder();
+        if (provinceName != null) sb.append(provinceName);
+        if (cityName != null) sb.append(cityName);
+        if (districtName != null) sb.append(districtName);
+        if (detail != null) sb.append(detail);
+        return sb.toString();
+    }
 }
