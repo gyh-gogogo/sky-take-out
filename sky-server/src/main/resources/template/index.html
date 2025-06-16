@@ -103,7 +103,7 @@
         }
     </style>
 </head>
-<body>
+    <body>
 <div class="container">
     <h1>AI 聊天助手 (流式)</h1>
 
@@ -192,11 +192,21 @@
         };
 
         eventSource.onmessage = function(event) {
-            const chunk = event.data;
+            let chunk = event.data;
             console.log('Received chunk:', chunk);
 
             hasReceivedData = true;
             isReceivingResponse = true;
+
+            // 处理接收到的数据，去掉引号
+            if (chunk.startsWith('"') && chunk.endsWith('"')) {
+                chunk = chunk.slice(1, -1); // 去掉首尾的引号
+            }
+
+            // 处理转义字符
+            chunk = chunk.replace(/\\"/g, '"'); // 处理转义的引号
+            chunk = chunk.replace(/\\n/g, '\n'); // 处理转义的换行符
+            chunk = chunk.replace(/\\\\/g, '\\'); // 处理转义的反斜杠
 
             // 如果是第一块数据，清除思考状态，开始显示回复
             if (aiResponseBuffer === '') {
